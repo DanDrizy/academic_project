@@ -80,3 +80,33 @@ app.get("/department-users", async (req, res) => {
     res.status(500).json({ error: "Database read error" });
   }
 });
+// ==============================
+// CLIENT_USERS ROUTES
+// ==============================
+
+// 1. Add client user
+app.post("/client-users", async (req, res) => {
+  const { full_name, phone_number, gender, location, status } = req.body;
+
+  try {
+    const result = await pool.query(
+      "INSERT INTO client_users (full_name, phone_number, gender, location, status) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [full_name, phone_number, gender, location, status]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error inserting client:", error);
+    res.status(500).json({ error: "Failed to insert client user" });
+  }
+});
+
+// 2. Get all client users
+app.get("/client-users", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM client_users ORDER BY id DESC");
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching clients:", error);
+    res.status(500).json({ error: "Failed to fetch client users" });
+  }
+});
