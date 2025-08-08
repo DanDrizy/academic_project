@@ -1,0 +1,57 @@
+<h2>Stock In – Add Item</h2>
+<form id="stockForm">
+  <input type="text" id="item_name" placeholder="Item Name" required><br>
+  <input type="number" id="quantity" placeholder="Quantity" required><br>
+  <input type="text" id="unit" placeholder="Unit (e.g. kg, pcs)" required><br>
+  <input type="number" id="unit_price" placeholder="Unit Price" step="0.01" required><br>
+  <input type="text" id="received_by" placeholder="Received By" required><br>
+  <button type="submit">Add Stock</button>
+</form>
+
+<h2>All Stock In Records</h2>
+<ul id="stockList"></ul>
+
+<script>
+  const stockApi = "https://academic-project-2-met4.onrender.com/stock-in";
+
+  document.getElementById("stockForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const stock = {
+      item_name: document.getElementById("item_name").value,
+      quantity: parseInt(document.getElementById("quantity").value),
+      unit: document.getElementById("unit").value,
+      unit_price: parseFloat(document.getElementById("unit_price").value),
+      received_by: document.getElementById("received_by").value
+    };
+
+    const res = await fetch(stockApi, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(stock)
+    });
+
+    if (res.ok) {
+      alert("✅ Stock added!");
+      loadStock();
+    } else {
+      alert("❌ Failed to add stock.");
+    }
+  });
+
+  async function loadStock() {
+    const res = await fetch(stockApi);
+    const stock = await res.json();
+
+    const list = document.getElementById("stockList");
+    list.innerHTML = "";
+
+    stock.forEach(s => {
+      const item = document.createElement("li");
+      item.textContent = `${s.item_name} – ${s.quantity}${s.unit} @ ${s.unit_price} = ${s.total_price} (by ${s.received_by})`;
+      list.appendChild(item);
+    });
+  }
+
+  loadStock();
+</script>

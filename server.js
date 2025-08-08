@@ -110,3 +110,34 @@ app.get("/client-users", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch client users" });
   }
 });
+// ==============================
+// STOCK_IN ROUTES
+// ==============================
+
+// 1. Add stock item
+app.post("/stock-in", async (req, res) => {
+  const { item_name, quantity, unit, unit_price, received_by } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO stock_in (item_name, quantity, unit, unit_price, received_by) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [item_name, quantity, unit, unit_price, received_by]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("Error adding stock in:", err);
+    res.status(500).json({ error: "Failed to insert stock in" });
+  }
+});
+
+// 2. Get all stock-in entries
+app.get("/stock-in", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM stock_in ORDER BY received_at DESC");
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching stock in:", err);
+    res.status(500).json({ error: "Failed to fetch stock in" });
+  }
+});
