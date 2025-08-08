@@ -1,55 +1,65 @@
 <!DOCTYPE html>
-<html lang="rw">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Message Sender</title>
+  <title>Department Users</title>
 </head>
 <body>
-  <h2>Ohereza Message</h2>
-
-  <form id="messageForm">
-    <input type="text" id="message" placeholder="Andika message..." required />
-    <button type="submit">Ohereza</button>
+  <h2>Add Department User</h2>
+  <form id="userForm">
+    <input type="text" id="full_name" placeholder="Full Name" required><br>
+    <input type="text" id="username" placeholder="Username" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <input type="text" id="department_name" placeholder="Department Name" required><br>
+    <input type="text" id="role" placeholder="Role" value="staff"><br>
+    <button type="submit">Save</button>
   </form>
 
-  <h3>Messages zasohowe:</h3>
-  <ul id="messageList"></ul>
+  <h2>All Department Users</h2>
+  <ul id="userList"></ul>
 
   <script>
-    const form = document.getElementById('messageForm');
-    const input = document.getElementById('message');
-    const list = document.getElementById('messageList');
+    const apiUrl = "https://academic-project-2-met4.onrender.com/department-users";
 
-    // Display all messages
-    async function loadMessages() {
-      const res = await fetch('http://localhost:3001/messages');
-      const data = await res.json();
+    document.getElementById("userForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const user = {
+        full_name: document.getElementById("full_name").value,
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+        department_name: document.getElementById("department_name").value,
+        role: document.getElementById("role").value,
+      };
+
+      const res = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(user),
+      });
+
+      if (res.ok) {
+        alert("✅ User saved!");
+        loadUsers();
+      } else {
+        alert("❌ Error saving user.");
+      }
+    });
+
+    async function loadUsers() {
+      const res = await fetch(apiUrl);
+      const users = await res.json();
+
+      const list = document.getElementById("userList");
       list.innerHTML = "";
-      data.forEach(msg => {
-        const li = document.createElement('li');
-        li.textContent = msg.content + ' (' + new Date(msg.created_at).toLocaleString() + ')';
-        list.appendChild(li);
+
+      users.forEach((u) => {
+        const item = document.createElement("li");
+        item.textContent = `${u.full_name} (${u.department_name} - ${u.role})`;
+        list.appendChild(item);
       });
     }
 
-    // Send message
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const content = input.value;
-      if (!content) return;
-
-      await fetch('http://localhost:3001/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
-      });
-
-      input.value = '';
-      loadMessages();
-    });
-
-    // Load on start
-    loadMessages();
+    loadUsers();
   </script>
 </body>
 </html>
